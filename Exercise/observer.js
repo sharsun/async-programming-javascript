@@ -1,4 +1,6 @@
-
+// Understanding concurrency through callback
+//Coordinating responses
+//Store in global variable to maintain time complexity
 
 function fakeAjax(url,cb) {
 	var fake_responses = {
@@ -16,18 +18,28 @@ function fakeAjax(url,cb) {
 }
 
 function output(text) {
-	console.log(text);
+	print(text);
 }
 
 // **************************************
 // The old-n-busted callback way
 function getFile(file) {
-	fakeAjax(file,function(text){
-		// what do we do here?
-	});
+	return Rx.Observable.create(observer =>{
+		fakeAjax(file, function(result){
+				observer.onNext(result);
+		})
+	})
+	
 }
 
+
 // request all files at once in "parallel"
-getFile("file1");
-getFile("file2");
-getFile("file3");
+getFile("file1").subscribe(function(result){
+	output(result);
+	getFile("file2").subscribe(function(result){
+		output(result);
+		getFile("file3").subscribe(function(result){
+			output(result);
+		})
+	})
+});
